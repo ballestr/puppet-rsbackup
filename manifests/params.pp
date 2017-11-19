@@ -1,0 +1,2 @@
+class rsbackup::params {
+}
