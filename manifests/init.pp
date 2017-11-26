@@ -23,7 +23,7 @@ class rsbackup::client {
 */
 }
 
-class rsbackup::local {
+class rsbackup::local () {
     include rsbackup::base
     package {"rsnapshot":ensure=>present}
 
@@ -32,6 +32,14 @@ class rsbackup::local {
 	"puppet:///files_site/rsbackup/rsnapshot.local.conf^${hostname}",
 	"puppet:///files_site/rsbackup/rsnapshot.local.conf",
 	"puppet:///modules/rsbackup/rsnapshot.local.conf"
+	],
+	notify=>Exec["rsbackup_configtest"]
+    }
+    file {"/etc/rsbackup/rsnapshot.local.pre":
+	source=>[
+	"puppet:///files_site/rsbackup/rsnapshot.local.pre^${hostname}",
+	"puppet:///files_site/rsbackup/rsnapshot.local.pre",
+	"puppet:///modules/rsbackup/rsnapshot.local.pre"
 	],
 	notify=>Exec["rsbackup_configtest"]
     }
