@@ -1,0 +1,8 @@
+## Managed by Puppet ##
+## file: modules/rsbackup/files/rsbackup_remote_cron
+#
+## crontab for rsbackup - /opt/rsbak
+## rsbackstatus is called by a separate cron
+#
+15  */4  *   *   *  root	/opt/rsbak/bin/rsbackup.sh      /opt/rsbak/etc/rsnapshot.remote1.conf
+45  19   *   *   *  root	/opt/rsbak/bin/rsbackrotate.sh  /opt/rsbak/etc/rsnapshot.remote1.conf

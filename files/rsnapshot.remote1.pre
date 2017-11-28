@@ -1,0 +1,4 @@
+## note that this is executed on the rsbackup pull server, not on the target
+## trying to execute something on the target via ssh will fail because of the validate_rsync on the authorized_keys
+## can still be useful for port knocking or similar
+exit 0
