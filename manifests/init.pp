@@ -58,8 +58,8 @@ class rsbackup::base {
     package {"rsync":ensure=>present}
 
     $rsbakdir="/opt/rsbak"
-    $gitrepo="https://github.com/ballestr/rsbackup.git"
-    vcscheck::git {"rsbackup":path=>"$rsbakdir",source=>$gitrepo}
+    $gitrepo=hiera("rsbackup/gitrepo","https://github.com/ballestr/rsbackup.git")
+    vcscheck::git {"rsbackup":path=>"$rsbakdir",source=>$gitrepo,create=>true}
 
     ## assume we are on standard linux, not Synology DSM + oPKG
     file {"/opt/bin": ensure=>directory,
