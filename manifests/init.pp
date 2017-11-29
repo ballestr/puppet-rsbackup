@@ -51,6 +51,7 @@ class rsbackup::remote::base {
     creates=>"$key"
     }
     ## rsbackup::cfgfile{["rsnapshot.exclude"]:} ## what if we do not want local backup?
+    rsbackup::cfgfile{"ssh.config":}
     rsbackup::cfgfile{"rsbackup_remote_cron":path=>"/etc/cron.d"}
 }
 
