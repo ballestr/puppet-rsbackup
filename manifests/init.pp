@@ -23,15 +23,27 @@ class rsbackup::client {
 */
 }
 
-class rsbackup::local () {
+class rsbackup::local ($pre=true) {
     include rsbackup::base
     package {"rsnapshot":ensure=>present}
 
-    rsbackup::cfgfile{["rsnapshot.exclude","rsnapshot.local.conf","rsnapshot.local.pre"]:}
+    rsbackup::cfgfile{["rsnapshot.exclude","rsnapshot.local.conf"]:}
+    if ($pre) {
+	rsbackup::cfgfile{["rsnapshot.local.pre"]:}
+    }
     ## note that Debian does not like any extension in a crontab filename, so no to .cron
     rsbackup::cfgfile{"rsbackup_local_cron":path=>"/etc/cron.d"}
 }
-class rsbackup::remote {
+
+define rsbackup::remote($pre=true) {
+    include rsbackup::remote::base
+    rsbackup::cfgfile{["rsnapshot.remote${name}.conf"]:}
+    if ($pre) {
+	rsbackup::cfgfile{["rsnapshot.remote${name}.pre"]:}
+    }
+}
+
+class rsbackup::remote::base {
     include rsbackup::local
     $key="/root/.ssh/id_rsa_rsbackup"
     exec {"rsbackup_create_key":
@@ -39,9 +51,9 @@ class rsbackup::remote {
     creates=>"$key"
     }
     ## rsbackup::cfgfile{["rsnapshot.exclude"]:} ## what if we do not want local backup?
-    rsbackup::cfgfile{["rsnapshot.remote1.conf","rsnapshot.remote1.pre"]:}
     rsbackup::cfgfile{"rsbackup_remote_cron":path=>"/etc/cron.d"}
 }
+
 
 define rsbackup::cfgfile ($path="/etc/rsbackup"){
     file {"$path/$name":
