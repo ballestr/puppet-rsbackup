@@ -103,6 +103,6 @@ class rsbackup::base {
     subscribe=>File["/etc/rsbackup/rsbackup.rc"]
     }
     file {"/etc/cron.d/rsbackup_status_cron":
-	content=>"## Managed by Puppet ##\n30  7    *   *   *  root	/opt/rsbak/bin/rsbackstatus.sh -m"
+	content=>"## Managed by Puppet ##\n30  7    *   *   *  root	/opt/rsbak/bin/rsbackstatus.sh -m\n"
     }
 }
