@@ -1,4 +1,6 @@
 #!/bin/bash # hint for syntaxhilight
+## Managed by Puppet ##
+## puppetfile: modules/rsbackup/rsbackup.rc
 ## configuration for rsbackup
 HOST=$(hostname -s)
 FROM=rsbackup@$(hostname -f)
