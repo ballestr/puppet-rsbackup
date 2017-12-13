@@ -1,5 +1,5 @@
 ## Managed by Puppet ##
-## file: modules/rsbackup/files/rsbackup_local_cron
+## puppetfile: modules/rsbackup/rsbackup_local_cron
 #
 ## crontab for rsbackup - /opt/rsbak
 ## rsbackstatus is called by a separate cron
