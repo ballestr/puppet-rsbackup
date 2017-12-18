@@ -23,11 +23,10 @@ class rsbackup::client {
 */
 }
 
-class rsbackup::local ($pre=true) {
-    include rsbackup::base
-    package {"rsnapshot":ensure=>present}
+class rsbackup::local ($pre=false) {
+    include rsbackup::serverbase
 
-    rsbackup::cfgfile{["rsnapshot.exclude","rsnapshot.local.conf"]:}
+    rsbackup::cfgfile{"rsnapshot.local.conf":}
     if ($pre) {
         rsbackup::cfgfile{["rsnapshot.local.pre"]:}
     }
@@ -35,16 +34,16 @@ class rsbackup::local ($pre=true) {
     rsbackup::cfgfile{"rsbackup_local_cron":path=>"/etc/cron.d"}
 }
 
-define rsbackup::remote($pre=true) {
+define rsbackup::remote($pre=false) {
     include rsbackup::remote::base
-    rsbackup::cfgfile{["rsnapshot.remote${name}.conf"]:}
+    rsbackup::cfgfile{["rsnapshot.remote_${name}.conf"]:}
     if ($pre) {
-        rsbackup::cfgfile{["rsnapshot.remote${name}.pre"]:}
+        rsbackup::cfgfile{["rsnapshot.remote_${name}.pre"]:}
     }
 }
 
 class rsbackup::remote::base {
-    include rsbackup::local
+    include rsbackup::server::base
     $key="/root/.ssh/id_rsa_rsbackup"
     exec {"rsbackup_create_key":
     command=>"/bin/ssh-keygen -t rsa -N '' -C \"rsbackup@$(hostname -s)_$(date +%Y%m%d)\" -f $key",
@@ -57,21 +56,29 @@ class rsbackup::remote::base {
 
 
 define rsbackup::cfgfile ($path="/etc/rsbackup"){
+    $FILES=hiera("rsbackup/files","puppet:///files_site/rsbackup")
     file {"$path/$name":
         source=>[
-        "puppet:///files_site/rsbackup/${name}^${hostname}",
-        "puppet:///files_site/rsbackup/${name}",
+        "$FILES/${name}^${hostname}",
+        "$FILES/${name}",
         "puppet:///modules/rsbackup/${name}"
         ],
         notify=>Exec["rsbackup_configtest"]
     }
 }
 
+class rsbackup::server::base {
+    include rsbackup::base
+    package {"rsnapshot":ensure=>present}
+    rsbackup::cfgfile{"rsnapshot.exclude":}
+}
+
+## base for both client and server
 class rsbackup::base {
     package {"rsync":ensure=>present}
 
     $rsbakdir="/opt/rsbak"
-    $group="nagios" ## allow servicecheck to execute rsbackstatus.sh
+    $group=hiera("rsbackup/group","nagios") ## allow servicecheck to execute rsbackstatus.sh as nagios
     $gitrepo=hiera("rsbackup/gitrepo","https://github.com/ballestr/rsbackup.git")
     vcscheck::git {"rsbackup":path=>"$rsbakdir",source=>$gitrepo,create=>true}
 
@@ -91,9 +98,10 @@ class rsbackup::base {
     exec {"rsbackup_configtest":
         command=>"/opt/rsbak/configtest.sh",
         refreshonly => true,
-        subscribe=>File["/etc/rsbackup/rsbackup.rc"]
+        subscribe=>File["/etc/rsbackup/rsbackup.rc"],
+        require=>File["/opt/bin/bash"]
     }
     file {"/etc/cron.d/rsbackup_status_cron":
-	content=>"## Managed by Puppet rsbackup::base ##\n30  7    *   *   *  root	/opt/rsbak/bin/rsbackstatus.sh -m\n"
+        content=>"## Managed by Puppet rsbackup::base ##\n30  7    *   *   *  root      /opt/rsbak/bin/rsbackstatus.sh -m\n"
     }
 }
