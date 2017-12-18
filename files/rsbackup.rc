@@ -1,4 +1,6 @@
 #!/bin/bash # hint for syntaxhilight
+## Managed by Puppet ##
+## puppetfile: modules/rsbackup/rsbackup.rc
 ## configuration for rsbackup
 HOST=$(hostname -s)
 FROM=rsbackup@$(hostname -f)
@@ -22,3 +24,10 @@ DEBUG=true
 PATH="/usr/sbin:/sbin:/opt/bin:$PATH"
 
 #BODY=$(mktemp /var/tmp/rsbackup.mailbody.XXXXXXXXXX)
+
+## let's be nice ;-)
+#ionice -p $$ ## debug: check default prio
+ionice -c2 -n1 -p $$
+[ $(nice) -eq 0 ] && renice -n 10 -p $$ >/dev/null
+
+true

@@ -71,39 +71,29 @@ class rsbackup::base {
     package {"rsync":ensure=>present}
 
     $rsbakdir="/opt/rsbak"
+    $group="nagios" ## allow servicecheck to execute rsbackstatus.sh
     $gitrepo=hiera("rsbackup/gitrepo","https://github.com/ballestr/rsbackup.git")
     vcscheck::git {"rsbackup":path=>"$rsbakdir",source=>$gitrepo,create=>true}
 
     ## assume we are on standard linux, not Synology DSM + oPKG
     file {"/opt/bin": ensure=>directory,
-        owner=>root,group=>root,mode=>0700 }
+        owner=>root,group=>root,mode=>0755 }
     file {"/opt/bin/bash": target=>"/bin/bash"}
 
     file {"/var/log/rsbackup": ensure=>directory,
-        owner=>root,group=>root,mode=>0700 }
+        owner=>root,group=>$group,mode=>0750 }
 
     ## Configuration directory and files
     file {"/opt/rsbak/etc": target=>"/etc/rsbackup"}
     file {"/etc/rsbackup": ensure=>directory,
-        owner=>root,group=>root,mode=>0700 }
+        owner=>root,group=>$group,mode=>0750 }
     rsbackup::cfgfile{"rsbackup.rc":}
-    /*
-    file {"/etc/rsbackup/rsbackup.rc":
-        source=>[
-        "puppet:///files_site/rsbackup/rsbackup.rc^${hostname}",
-        "puppet:///files_site/rsbackup/rsbackup.rc",
-        "puppet:///modules/rsbackup/rsbackup.rc"
-        ],
-        ## notify=>Exec["rsbackup_configtest"] # subscribe from it instead
-    }
-*/
     exec {"rsbackup_configtest":
-    command=>"/opt/rsbak/configtest.sh",
-    refreshonly => true,
-    subscribe=>File["/etc/rsbackup/rsbackup.rc"],
-    require=>File["/opt/bin/bash"]
+        command=>"/opt/rsbak/configtest.sh",
+        refreshonly => true,
+        subscribe=>File["/etc/rsbackup/rsbackup.rc"]
     }
     file {"/etc/cron.d/rsbackup_status_cron":
-        content=>"## Managed by Puppet ##\n30  7    *   *   *  root     /opt/rsbak/bin/rsbackstatus.sh -m\n"
+	content=>"## Managed by Puppet rsbackup::base ##\n30  7    *   *   *  root	/opt/rsbak/bin/rsbackstatus.sh -m\n"
     }
 }

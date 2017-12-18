@@ -1,6 +1,6 @@
 #!/bin/bash
-## Managed by puppet ##
-## file: modules/rsbackup/files/rsnapshot.local.pre
+## Managed by Puppet ##
+## puppetfile: modules/rsbackup/rsnapshot.local.pre
 
 ## Typically you would use this script to backup databases, version control repos  or similar
 ## any kind of file where the data may be in an inconsistent state 
