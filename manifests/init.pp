@@ -24,7 +24,7 @@ class rsbackup::client {
 }
 
 class rsbackup::local ($pre=false) {
-    include rsbackup::serverbase
+    include rsbackup::server::base
 
     rsbackup::cfgfile{"rsnapshot.local.conf":}
     if ($pre) {
@@ -78,7 +78,7 @@ class rsbackup::base {
     package {"rsync":ensure=>present}
 
     $rsbakdir="/opt/rsbak"
-    $group=hiera("rsbackup/group","nagios") ## allow servicecheck to execute rsbackstatus.sh as nagios
+    $group=hiera("rsbackup/group","root") ## allow servicecheck to execute rsbackstatus.sh e.g. as nagios
     $gitrepo=hiera("rsbackup/gitrepo","https://github.com/ballestr/rsbackup.git")
     vcscheck::git {"rsbackup":path=>"$rsbakdir",source=>$gitrepo,create=>true}
 
