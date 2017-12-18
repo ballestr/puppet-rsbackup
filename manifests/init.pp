@@ -29,7 +29,7 @@ class rsbackup::local ($pre=true) {
 
     rsbackup::cfgfile{["rsnapshot.exclude","rsnapshot.local.conf"]:}
     if ($pre) {
-	rsbackup::cfgfile{["rsnapshot.local.pre"]:}
+        rsbackup::cfgfile{["rsnapshot.local.pre"]:}
     }
     ## note that Debian does not like any extension in a crontab filename, so no to .cron
     rsbackup::cfgfile{"rsbackup_local_cron":path=>"/etc/cron.d"}
@@ -39,7 +39,7 @@ define rsbackup::remote($pre=true) {
     include rsbackup::remote::base
     rsbackup::cfgfile{["rsnapshot.remote${name}.conf"]:}
     if ($pre) {
-	rsbackup::cfgfile{["rsnapshot.remote${name}.pre"]:}
+        rsbackup::cfgfile{["rsnapshot.remote${name}.pre"]:}
     }
 }
 
@@ -58,12 +58,12 @@ class rsbackup::remote::base {
 
 define rsbackup::cfgfile ($path="/etc/rsbackup"){
     file {"$path/$name":
-	source=>[
-	"puppet:///files_site/rsbackup/${name}^${hostname}",
-	"puppet:///files_site/rsbackup/${name}",
-	"puppet:///modules/rsbackup/${name}"
-	],
-	notify=>Exec["rsbackup_configtest"]
+        source=>[
+        "puppet:///files_site/rsbackup/${name}^${hostname}",
+        "puppet:///files_site/rsbackup/${name}",
+        "puppet:///modules/rsbackup/${name}"
+        ],
+        notify=>Exec["rsbackup_configtest"]
     }
 }
 
@@ -76,33 +76,34 @@ class rsbackup::base {
 
     ## assume we are on standard linux, not Synology DSM + oPKG
     file {"/opt/bin": ensure=>directory,
-	owner=>root,group=>root,mode=>0700 }
+        owner=>root,group=>root,mode=>0700 }
     file {"/opt/bin/bash": target=>"/bin/bash"}
 
     file {"/var/log/rsbackup": ensure=>directory,
-	owner=>root,group=>root,mode=>0700 }
+        owner=>root,group=>root,mode=>0700 }
 
     ## Configuration directory and files
     file {"/opt/rsbak/etc": target=>"/etc/rsbackup"}
     file {"/etc/rsbackup": ensure=>directory,
-	owner=>root,group=>root,mode=>0700 }
+        owner=>root,group=>root,mode=>0700 }
     rsbackup::cfgfile{"rsbackup.rc":}
     /*
     file {"/etc/rsbackup/rsbackup.rc":
-	source=>[
-	"puppet:///files_site/rsbackup/rsbackup.rc^${hostname}",
-	"puppet:///files_site/rsbackup/rsbackup.rc",
-	"puppet:///modules/rsbackup/rsbackup.rc"
-	],
-	## notify=>Exec["rsbackup_configtest"] # subscribe from it instead
+        source=>[
+        "puppet:///files_site/rsbackup/rsbackup.rc^${hostname}",
+        "puppet:///files_site/rsbackup/rsbackup.rc",
+        "puppet:///modules/rsbackup/rsbackup.rc"
+        ],
+        ## notify=>Exec["rsbackup_configtest"] # subscribe from it instead
     }
 */
     exec {"rsbackup_configtest":
     command=>"/opt/rsbak/configtest.sh",
     refreshonly => true,
-    subscribe=>File["/etc/rsbackup/rsbackup.rc"]
+    subscribe=>File["/etc/rsbackup/rsbackup.rc"],
+    require=>File["/opt/bin/bash"]
     }
     file {"/etc/cron.d/rsbackup_status_cron":
-	content=>"## Managed by Puppet ##\n30  7    *   *   *  root	/opt/rsbak/bin/rsbackstatus.sh -m\n"
+        content=>"## Managed by Puppet ##\n30  7    *   *   *  root     /opt/rsbak/bin/rsbackstatus.sh -m\n"
     }
 }
