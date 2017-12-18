@@ -98,7 +98,8 @@ class rsbackup::base {
     exec {"rsbackup_configtest":
         command=>"/opt/rsbak/configtest.sh",
         refreshonly => true,
-        subscribe=>File["/etc/rsbackup/rsbackup.rc"]
+        subscribe=>File["/etc/rsbackup/rsbackup.rc"],
+        require=>File["/opt/bin/bash"]
     }
     file {"/etc/cron.d/rsbackup_status_cron":
         content=>"## Managed by Puppet rsbackup::base ##\n30  7    *   *   *  root      /opt/rsbak/bin/rsbackstatus.sh -m\n"
