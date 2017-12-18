@@ -28,7 +28,7 @@ class rsbackup::local ($pre=false) {
 
     rsbackup::cfgfile{"rsnapshot.local.conf":}
     if ($pre) {
-	rsbackup::cfgfile{["rsnapshot.local.pre"]:}
+        rsbackup::cfgfile{["rsnapshot.local.pre"]:}
     }
     ## note that Debian does not like any extension in a crontab filename, so no to .cron
     rsbackup::cfgfile{"rsbackup_local_cron":path=>"/etc/cron.d"}
@@ -38,7 +38,7 @@ define rsbackup::remote($pre=false) {
     include rsbackup::remote::base
     rsbackup::cfgfile{["rsnapshot.remote_${name}.conf"]:}
     if ($pre) {
-	rsbackup::cfgfile{["rsnapshot.remote_${name}.pre"]:}
+        rsbackup::cfgfile{["rsnapshot.remote_${name}.pre"]:}
     }
 }
 
@@ -58,12 +58,12 @@ class rsbackup::remote::base {
 define rsbackup::cfgfile ($path="/etc/rsbackup"){
     $FILES=hiera("rsbackup/files","puppet:///files_site/rsbackup")
     file {"$path/$name":
-	source=>[
-	"$FILES/${name}^${hostname}",
-	"$FILES/${name}",
-	"puppet:///modules/rsbackup/${name}"
-	],
-	notify=>Exec["rsbackup_configtest"]
+        source=>[
+        "$FILES/${name}^${hostname}",
+        "$FILES/${name}",
+        "puppet:///modules/rsbackup/${name}"
+        ],
+        notify=>Exec["rsbackup_configtest"]
     }
 }
 
@@ -101,6 +101,6 @@ class rsbackup::base {
         subscribe=>File["/etc/rsbackup/rsbackup.rc"]
     }
     file {"/etc/cron.d/rsbackup_status_cron":
-	content=>"## Managed by Puppet rsbackup::base ##\n30  7    *   *   *  root	/opt/rsbak/bin/rsbackstatus.sh -m\n"
+        content=>"## Managed by Puppet rsbackup::base ##\n30  7    *   *   *  root      /opt/rsbak/bin/rsbackstatus.sh -m\n"
     }
 }
