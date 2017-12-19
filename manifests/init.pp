@@ -80,7 +80,13 @@ class rsbackup::base {
     $rsbakdir="/opt/rsbak"
     $group=hiera("rsbackup/group","root") ## allow servicecheck to execute rsbackstatus.sh e.g. as nagios
     $gitrepo=hiera("rsbackup/gitrepo","https://github.com/ballestr/rsbackup.git")
-    vcscheck::git {"rsbackup":path=>"$rsbakdir",source=>$gitrepo,create=>true}
+    if ( $gitrepo =~ /^puppet:/ ) {
+        file {$rsbakdir:source=>"$gitrepo",recurse=>true,ignore=>["etc",".git"]}
+        file {"$rsbakdir/_deployed_by_puppet.txt":content=>"Source: $gitrepo on $servername\n"}
+    } else {
+        vcscheck::git {"rsbackup":path=>"$rsbakdir",source=>$gitrepo,create=>true}
+        file {"$rsbakdir/_deployed_by_puppet.txt":ensure=>absent}
+    }
 
     ## assume we are on standard linux, not Synology DSM + oPKG
     file {"/opt/bin": ensure=>directory,
