@@ -78,7 +78,14 @@ class rsbackup::base inherits rsbackup::params {
 
     $group=hiera('rsbackup/group','root') ## allow servicecheck to execute rsbackstatus.sh e.g. as nagios
     $gitrepo=hiera('rsbackup/gitrepo','https://github.com/ballestr/rsbackup.git')
-    vcscheck::git {'rsbackup':path=>$rsbakdir,source=>$gitrepo,create=>true}
+    $deployfile="${rsbakdir}/_deployed_by_puppet.txt"
+    if ( $gitrepo =~ /^puppet:/ ) {
+        file {$rsbakdir: source =>$gitrepo,recurse=>true,ignore=>['etc','.git']}
+        file {$deployfile: content =>"source=${gitrepo} on ${servername}\n"}
+    } else {
+        vcscheck::git {'rsbackup': path=>$rsbakdir,source=>$gitrepo,create=>true}
+        file {$deployfile: ensure=>absent}
+    }
 
     ## assume we are on standard linux, not Synology DSM + oPKG
     ## so we need to provide /opt/bin/bash
