@@ -7,8 +7,8 @@ class rsbackup::client inherits rsbackup::params {
     $script="${path}/validate_rsync"
     ssh_authorized_key {
         'rsbackup':
-            ensure  =>present
-            user    =>'root'
+            ensure  =>present,
+            user    =>'root',
             type    =>'ssh-rsa',
             options =>"command=\"${script}\"",
             key     =>hiera('rsbackup/sshkey');
@@ -53,11 +53,12 @@ class rsbackup::remote::base {
 }
 
 ## generic configuration file for rsbackup
-define rsbackup::cfgfile ($path='/etc/rsbackup') inherits rsbackup::params {
+define rsbackup::cfgfile ($path='/etc/rsbackup') {
+    include rsbackup::params
     file {"${path}/${name}":
         source =>[
-        "${cfgpath}/${name}^${::hostname}",
-        "${cfgpath}/${name}",
+        "${rsbackup::params::cfgpath}/${name}^${::hostname}",
+        "${rsbackup::params::cfgpath}/${name}",
         "puppet:///modules/rsbackup/${name}"
         ],
         notify =>Exec['rsbackup_configtest']
