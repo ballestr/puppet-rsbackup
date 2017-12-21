@@ -74,7 +74,11 @@ class rsbackup::server::base {
 
 ## base configuration for both client and server
 class rsbackup::base inherits rsbackup::params {
-    package {'rsync':ensure=>present}
+    if defined('pkg::set::rsync') {
+        include pkg::set::rsync
+    } else {
+        package {'rsync':ensure=>present}
+    }
 
     $group=hiera('rsbackup/group','root') ## allow servicecheck to execute rsbackstatus.sh e.g. as nagios
     $gitrepo=hiera('rsbackup/gitrepo','https://github.com/ballestr/rsbackup.git')
