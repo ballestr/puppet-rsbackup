@@ -3,24 +3,14 @@ class rsbackup::client {
 
     ## setup for remote, restricted rsync
     $path="/opt/rsbak/bin"
-    $script="$path/validate_rsync"
+    $script="${path}/validate_rsync"
     ssh_authorized_key {
         "rsbackup":
             ensure=>present,user=>"root",type=>"ssh-rsa",
-            options=>"command=\"$script\"",
+            options=>"command=\"${script}\"",
             key=>hiera("rsbackup/sshkey");
     }
-
-## we use the git checkout for the files
-/*
-    file { 
-        "$path":
-            ensure=>directory, mode=>700, owner=>root, group=>root;
-        "$script":
-            ensure=>present, mode=>700, owner=>root, group=>root,
-            source=>"puppet:///modules/rsbackup/validate_rsync";
-    }
-*/
+    ## we use the git checkout for the files
 }
 
 class rsbackup::local ($pre=false) {
@@ -46,8 +36,8 @@ class rsbackup::remote::base {
     include rsbackup::server::base
     $key="/root/.ssh/id_rsa_rsbackup"
     exec {"rsbackup_create_key":
-    command=>"/bin/ssh-keygen -t rsa -N '' -C \"rsbackup@$(hostname -s)_$(date +%Y%m%d)\" -f $key",
-    creates=>"$key"
+        command=>"/bin/ssh-keygen -t rsa -N '' -C \"rsbackup@$(hostname -s)_$(date +%Y%m%d)\" -f ${key}",
+        creates=>$key
     }
     ## rsbackup::cfgfile{["rsnapshot.exclude"]:} ## what if we do not want local backup?
     rsbackup::cfgfile{"ssh.config":}
@@ -56,11 +46,11 @@ class rsbackup::remote::base {
 
 
 define rsbackup::cfgfile ($path="/etc/rsbackup"){
-    $FILES=hiera("rsbackup/files","puppet:///files_site/rsbackup")
-    file {"$path/$name":
+    $cfgpath=hiera("rsbackup/files","puppet:///files_site/rsbackup") #lint:ignore:puppet_url_without_modules
+    file {"${path}/${name}":
         source=>[
-        "$FILES/${name}^${hostname}",
-        "$FILES/${name}",
+        "${cfgpath}/${name}^${hostname}",
+        "${cfgpath}/${name}",
         "puppet:///modules/rsbackup/${name}"
         ],
         notify=>Exec["rsbackup_configtest"]
@@ -80,20 +70,20 @@ class rsbackup::base {
     $rsbakdir="/opt/rsbak"
     $group=hiera("rsbackup/group","root") ## allow servicecheck to execute rsbackstatus.sh e.g. as nagios
     $gitrepo=hiera("rsbackup/gitrepo","https://github.com/ballestr/rsbackup.git")
-    vcscheck::git {"rsbackup":path=>"$rsbakdir",source=>$gitrepo,create=>true}
+    vcscheck::git {"rsbackup":path=>$rsbakdir,source=>$gitrepo,create=>true}
 
     ## assume we are on standard linux, not Synology DSM + oPKG
     file {"/opt/bin": ensure=>directory,
-        owner=>root,group=>root,mode=>0755 }
+        owner=>root,group=>root,mode=>'0755' }
     file {"/opt/bin/bash": target=>"/bin/bash"}
 
     file {"/var/log/rsbackup": ensure=>directory,
-        owner=>root,group=>$group,mode=>0750 }
+        owner=>root,group=>$group,mode=>'0750' }
 
     ## Configuration directory and files
     file {"/opt/rsbak/etc": target=>"/etc/rsbackup"}
     file {"/etc/rsbackup": ensure=>directory,
-        owner=>root,group=>$group,mode=>0750 }
+        owner=>root,group=>$group,mode=>'0750' }
     rsbackup::cfgfile{"rsbackup.rc":}
     exec {"rsbackup_configtest":
         command=>"/opt/rsbak/configtest.sh",
