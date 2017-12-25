@@ -57,8 +57,8 @@ define rsbackup::cfgfile ($path='/etc/rsbackup') {
     include rsbackup::params
     file {"${path}/${name}":
         source =>[
-        "${rsbackup::params::cfgpath}/${name}^${::hostname}",
-        "${rsbackup::params::cfgpath}/${name}",
+        "${rsbackup::params::cfgsrc}/${name}^${::hostname}",
+        "${rsbackup::params::cfgsrc}/${name}",
         "puppet:///modules/rsbackup/${name}"
         ],
         notify =>Exec['rsbackup_configtest']
