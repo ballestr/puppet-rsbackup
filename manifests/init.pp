@@ -115,6 +115,6 @@ class rsbackup::base inherits rsbackup::params {
         'rsbackup_status':
         comment => "Check RSBackup status - rsbackup::base",
         # mail => "atlas-tdaq-sysadmins-logs@cern.ch",
-        jobs => "30 7 * * * root ${rsbakdir}/bin/rsbackstatus.sh ${opt}",
+        jobs => ["30 7 * * * root ${rsbakdir}/bin/rsbackstatus.sh ${opt}"],
     }
 }
