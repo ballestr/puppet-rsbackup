@@ -53,6 +53,7 @@ class rsbackup::remote::base {
 }
 
 ## generic configuration file for rsbackup
+## ToDo: default path should be replaced by rsbackup::params::cfgdst, but need to figure out how since defines do not inherit
 define rsbackup::cfgfile ($path='/etc/rsbackup') {
     include rsbackup::params
     file {"${path}/${name}":
@@ -99,16 +100,21 @@ class rsbackup::base inherits rsbackup::params {
     file {'/var/log/rsbackup': ensure=>directory,owner=>root,group=>$group,mode=>'0750' }
 
     ## Configuration directory and files
-    file {"${rsbakdir}/etc": target=>'/etc/rsbackup'}
-    file {'/etc/rsbackup': ensure=>directory,owner=>root,group=>$group,mode=>'0750' }
+    file {"${rsbakdir}/etc": target=>$cfgdst}
+    file {$cfgdst: ensure=>directory,owner=>root,group=>$group,mode=>'0750' }
     rsbackup::cfgfile{'rsbackup.rc':}
     exec {'rsbackup_configtest':
         command     =>"${rsbakdir}/configtest.sh",
         refreshonly => true,
-        subscribe   =>File['/etc/rsbackup/rsbackup.rc'],
+        subscribe   =>File["${cfgdst}/rsbackup.rc"],
         require     =>File['/opt/bin/bash']
     }
-    file {'/etc/cron.d/rsbackup_status_cron':
-        content =>"## Managed by Puppet rsbackup::base ##\n30  7    *   *   *  root      ${rsbakdir}/bin/rsbackstatus.sh -m\n"
+    ## Cronjob for checking status of backups
+    $opt= $statusmail ? { 'always'=>'--mail', 'onerror'=>'--mailerr', 'servicecheck'=>'--mailcheck' }
+    crond::job {
+        'rsbackup_status':
+        comment => "Check RSBackup status - rsbackup::base",
+        # mail => "atlas-tdaq-sysadmins-logs@cern.ch",
+        jobs => "30 7 * * * root ${rsbakdir}/bin/rsbackstatus.sh ${opt}",
     }
 }
